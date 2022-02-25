@@ -1,8 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Hyperledger Cactus Plugin - Connector Quorum
- * Can perform basic tasks on a Quorum ledger
+ * Hyperledger Cactus Plugin - Connector Go Quorum
+ * Can perform basic tasks on a Go Quorum ledger
  *
  * The version of the OpenAPI document: 0.0.1
  * 
@@ -24,132 +24,27 @@ import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } fr
 /**
  * 
  * @export
- * @interface ContractJSON
+ * @interface ConsistencyStrategy
  */
-export interface ContractJSON {
-    [key: string]: object | any;
-
+export interface ConsistencyStrategy {
     /**
      * 
-     * @type {string}
-     * @memberof ContractJSON
+     * @type {ReceiptType}
+     * @memberof ConsistencyStrategy
      */
-    contractName: string;
+    receiptType: ReceiptType;
     /**
-     * See https://ethereum.stackexchange.com/a/47556 regarding the maximum length of the bytecode
-     * @type {string}
-     * @memberof ContractJSON
-     */
-    bytecode: string;
-    /**
-     * The application binary interface of the solidity contract, optional parameter
-     * @type {Array<any>}
-     * @memberof ContractJSON
-     */
-    abi?: Array<any>;
-    /**
-     * 
-     * @type {string}
-     * @memberof ContractJSON
-     */
-    metadata?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ContractJSON
-     */
-    deployedBytecode?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ContractJSON
-     */
-    sourceMap?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ContractJSON
-     */
-    deployedSourceMap?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ContractJSON
-     */
-    sourcePath?: string;
-    /**
-     * 
-     * @type {object}
-     * @memberof ContractJSON
-     */
-    compiler?: object;
-    /**
-     * 
-     * @type {object}
-     * @memberof ContractJSON
-     */
-    networks?: object;
-    /**
-     * 
-     * @type {object}
-     * @memberof ContractJSON
-     */
-    ast?: object;
-    /**
-     * 
-     * @type {object}
-     * @memberof ContractJSON
-     */
-    functionHashes?: object;
-    /**
-     * 
-     * @type {object}
-     * @memberof ContractJSON
-     */
-    gasEstimates?: object;
-}
-/**
- * 
- * @export
- * @interface DeployContractSolidityBytecodeJsonObjectV1Request
- */
-export interface DeployContractSolidityBytecodeJsonObjectV1Request {
-    /**
-     * 
-     * @type {Web3SigningCredential}
-     * @memberof DeployContractSolidityBytecodeJsonObjectV1Request
-     */
-    web3SigningCredential: Web3SigningCredential;
-    /**
-     * 
+     * The amount of milliseconds to wait for the receipt to arrive to the connector. Defaults to 0 which means to wait for an unlimited amount of time. Note that this wait may be interrupted still by other parts of the infrastructure such as load balancers cutting of HTTP requests after some time even if they are the type that is supposed to be kept alive. The question of re-entrance is a broader topic not in scope to discuss here, but it is important to mention it.
      * @type {number}
-     * @memberof DeployContractSolidityBytecodeJsonObjectV1Request
-     */
-    gas?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof DeployContractSolidityBytecodeJsonObjectV1Request
-     */
-    gasPrice?: string;
-    /**
-     * The amount of milliseconds to wait for a transaction receipt with theaddress of the contract(which indicates successful deployment) beforegiving up and crashing.
-     * @type {number}
-     * @memberof DeployContractSolidityBytecodeJsonObjectV1Request
+     * @memberof ConsistencyStrategy
      */
     timeoutMs?: number;
     /**
-     * 
-     * @type {ContractJSON}
-     * @memberof DeployContractSolidityBytecodeJsonObjectV1Request
+     * The number of blocks to wait to be confirmed in addition to the block containing the transaction in question. Note that if the receipt type is set to only wait for node transaction pool ACK and this parameter is set to anything, but zero then the API will not accept the request due to conflicting parameters.
+     * @type {number}
+     * @memberof ConsistencyStrategy
      */
-    contractJSON: ContractJSON;
-    /**
-     * The list of arguments to pass in to the constructor of the contract being deployed.
-     * @type {Array<any>}
-     * @memberof DeployContractSolidityBytecodeJsonObjectV1Request
-     */
-    constructorArgs?: Array<any>;
+    blockConfirmations: number;
 }
 /**
  * 
@@ -164,11 +59,29 @@ export interface DeployContractSolidityBytecodeV1Request {
      */
     contractName: string;
     /**
+     * The application binary interface of the solidity contract
+     * @type {Array<any>}
+     * @memberof DeployContractSolidityBytecodeV1Request
+     */
+    contractAbi: Array<any>;
+    /**
+     * 
+     * @type {Array<any>}
+     * @memberof DeployContractSolidityBytecodeV1Request
+     */
+    constructorArgs: Array<any>;
+    /**
      * 
      * @type {Web3SigningCredential}
      * @memberof DeployContractSolidityBytecodeV1Request
      */
     web3SigningCredential: Web3SigningCredential;
+    /**
+     * See https://ethereum.stackexchange.com/a/47556 regarding the maximum length of the bytecode
+     * @type {string}
+     * @memberof DeployContractSolidityBytecodeV1Request
+     */
+    bytecode: string;
     /**
      * The keychainId for retrieve the contracts json.
      * @type {string}
@@ -194,17 +107,11 @@ export interface DeployContractSolidityBytecodeV1Request {
      */
     timeoutMs?: number;
     /**
-     * For use when not using keychain, pass the contract in as this variable
-     * @type {object}
+     * 
+     * @type {QuorumPrivateTransactionConfig}
      * @memberof DeployContractSolidityBytecodeV1Request
      */
-    contractJSON?: object;
-    /**
-     * The list of arguments to pass in to the constructor of the contract being deployed.
-     * @type {Array<any>}
-     * @memberof DeployContractSolidityBytecodeV1Request
-     */
-    constructorArgs?: Array<any>;
+    privateTransactionConfig?: QuorumPrivateTransactionConfig;
 }
 /**
  * 
@@ -233,75 +140,423 @@ export enum EthContractInvocationType {
 /**
  * 
  * @export
- * @interface InvokeContractJsonObjectV1Request
+ * @interface EvmBlock
  */
-export interface InvokeContractJsonObjectV1Request {
-    /**
-     * 
-     * @type {Web3SigningCredential}
-     * @memberof InvokeContractJsonObjectV1Request
-     */
-    web3SigningCredential: Web3SigningCredential;
-    /**
-     * 
-     * @type {EthContractInvocationType}
-     * @memberof InvokeContractJsonObjectV1Request
-     */
-    invocationType: EthContractInvocationType;
-    /**
-     * The name of the contract method to invoke.
-     * @type {string}
-     * @memberof InvokeContractJsonObjectV1Request
-     */
-    methodName: string;
-    /**
-     * The list of arguments to pass in to the contract method being invoked.
-     * @type {Array<any>}
-     * @memberof InvokeContractJsonObjectV1Request
-     */
-    params: Array<any>;
-    /**
-     * Address of the solidity contract
-     * @type {string}
-     * @memberof InvokeContractJsonObjectV1Request
-     */
-    contractAddress: string;
-    /**
-     * 
-     * @type {string | number}
-     * @memberof InvokeContractJsonObjectV1Request
-     */
-    value?: string | number;
-    /**
-     * 
-     * @type {string | number}
-     * @memberof InvokeContractJsonObjectV1Request
-     */
-    gas?: string | number;
-    /**
-     * 
-     * @type {string | number}
-     * @memberof InvokeContractJsonObjectV1Request
-     */
-    gasPrice?: string | number;
+export interface EvmBlock {
     /**
      * 
      * @type {number}
-     * @memberof InvokeContractJsonObjectV1Request
+     * @memberof EvmBlock
+     */
+    number?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmBlock
+     */
+    hash?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmBlock
+     */
+    parentHash?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmBlock
+     */
+    nonce?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmBlock
+     */
+    sha3Uncles?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmBlock
+     */
+    logsBloom?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmBlock
+     */
+    transactionsRoot?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmBlock
+     */
+    stateRoot?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmBlock
+     */
+    miner?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof EvmBlock
+     */
+    difficulty?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof EvmBlock
+     */
+    totalDifficulty?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmBlock
+     */
+    extraData?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof EvmBlock
+     */
+    size?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof EvmBlock
+     */
+    gasLimit?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof EvmBlock
+     */
+    gasUsed?: number;
+    /**
+     * 
+     * @type {any}
+     * @memberof EvmBlock
+     */
+    timestamp?: any | null;
+    /**
+     * 
+     * @type {Array<any>}
+     * @memberof EvmBlock
+     */
+    transactions?: Array<any>;
+    /**
+     * 
+     * @type {Array<any>}
+     * @memberof EvmBlock
+     */
+    uncles?: Array<any>;
+}
+/**
+ * 
+ * @export
+ * @interface EvmLog
+ */
+export interface EvmLog {
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmLog
+     */
+    address: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmLog
+     */
+    data: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmLog
+     */
+    blockHash: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmLog
+     */
+    transactionHash: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof EvmLog
+     */
+    topics: Array<string>;
+    /**
+     * 
+     * @type {number}
+     * @memberof EvmLog
+     */
+    logIndex: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof EvmLog
+     */
+    transactionIndex: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof EvmLog
+     */
+    blockNumber: number;
+}
+/**
+ * 
+ * @export
+ * @interface EvmTransaction
+ */
+export interface EvmTransaction {
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmTransaction
+     */
+    hash?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof EvmTransaction
      */
     nonce?: number;
     /**
-     * The amount of milliseconds to wait for a transaction receipt beforegiving up and crashing. Only has any effect if the invocation type is SEND
-     * @type {number}
-     * @memberof InvokeContractJsonObjectV1Request
+     * 
+     * @type {any}
+     * @memberof EvmTransaction
      */
-    timeoutMs?: number;
+    blockHash?: any | null;
     /**
      * 
-     * @type {ContractJSON}
-     * @memberof InvokeContractJsonObjectV1Request
+     * @type {any}
+     * @memberof EvmTransaction
      */
-    contractJSON: ContractJSON;
+    blockNumber?: any | null;
+    /**
+     * 
+     * @type {any}
+     * @memberof EvmTransaction
+     */
+    transactionIndex?: any | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmTransaction
+     */
+    from?: string;
+    /**
+     * 
+     * @type {any}
+     * @memberof EvmTransaction
+     */
+    to?: any | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmTransaction
+     */
+    value?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmTransaction
+     */
+    gasPrice?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof EvmTransaction
+     */
+    gas?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmTransaction
+     */
+    input?: string;
+}
+/**
+ * 
+ * @export
+ * @interface GetBalanceV1Request
+ */
+export interface GetBalanceV1Request {
+    /**
+     * 
+     * @type {string}
+     * @memberof GetBalanceV1Request
+     */
+    address: string;
+    /**
+     * 
+     * @type {any}
+     * @memberof GetBalanceV1Request
+     */
+    defaultBlock?: any | null;
+}
+/**
+ * 
+ * @export
+ * @interface GetBalanceV1Response
+ */
+export interface GetBalanceV1Response {
+    /**
+     * 
+     * @type {string}
+     * @memberof GetBalanceV1Response
+     */
+    balance: string;
+}
+/**
+ * 
+ * @export
+ * @interface GetBlockV1Request
+ */
+export interface GetBlockV1Request {
+    /**
+     * 
+     * @type {any}
+     * @memberof GetBlockV1Request
+     */
+    blockHashOrBlockNumber: any | null;
+}
+/**
+ * 
+ * @export
+ * @interface GetBlockV1Response
+ */
+export interface GetBlockV1Response {
+    /**
+     * 
+     * @type {EvmBlock}
+     * @memberof GetBlockV1Response
+     */
+    block: EvmBlock;
+}
+/**
+ * 
+ * @export
+ * @interface GetPastLogsV1Request
+ */
+export interface GetPastLogsV1Request {
+    /**
+     * 
+     * @type {any}
+     * @memberof GetPastLogsV1Request
+     */
+    toBlock?: any | null;
+    /**
+     * 
+     * @type {any}
+     * @memberof GetPastLogsV1Request
+     */
+    fromBlock?: any | null;
+    /**
+     * 
+     * @type {any}
+     * @memberof GetPastLogsV1Request
+     */
+    address?: any | null;
+    /**
+     * 
+     * @type {Array<any>}
+     * @memberof GetPastLogsV1Request
+     */
+    topics?: Array<any>;
+}
+/**
+ * 
+ * @export
+ * @interface GetPastLogsV1Response
+ */
+export interface GetPastLogsV1Response {
+    /**
+     * 
+     * @type {Array<EvmLog>}
+     * @memberof GetPastLogsV1Response
+     */
+    logs: Array<EvmLog>;
+}
+/**
+ * 
+ * @export
+ * @interface GetQuorumRecordV1Request
+ */
+export interface GetQuorumRecordV1Request {
+    /**
+     * 
+     * @type {InvokeContractV1Request}
+     * @memberof GetQuorumRecordV1Request
+     */
+    invokeCall?: InvokeContractV1Request;
+    /**
+     * 
+     * @type {string}
+     * @memberof GetQuorumRecordV1Request
+     */
+    transactionHash?: string;
+}
+/**
+ * 
+ * @export
+ * @interface GetQuorumRecordV1Response
+ */
+export interface GetQuorumRecordV1Response {
+    /**
+     * 
+     * @type {string}
+     * @memberof GetQuorumRecordV1Response
+     */
+    ledgerId?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof GetQuorumRecordV1Response
+     */
+    stateContract?: string;
+    /**
+     * 
+     * @type {any}
+     * @memberof GetQuorumRecordV1Response
+     */
+    transactionInputData?: any | null;
+    /**
+     * 
+     * @type {any}
+     * @memberof GetQuorumRecordV1Response
+     */
+    callOutput?: any | null;
+}
+/**
+ * 
+ * @export
+ * @interface GetTransactionV1Request
+ */
+export interface GetTransactionV1Request {
+    /**
+     * 
+     * @type {string}
+     * @memberof GetTransactionV1Request
+     */
+    transactionHash: string;
+}
+/**
+ * 
+ * @export
+ * @interface GetTransactionV1Response
+ */
+export interface GetTransactionV1Response {
+    /**
+     * 
+     * @type {EvmTransaction}
+     * @memberof GetTransactionV1Response
+     */
+    transaction: EvmTransaction;
 }
 /**
  * 
@@ -310,7 +565,7 @@ export interface InvokeContractJsonObjectV1Request {
  */
 export interface InvokeContractV1Request {
     /**
-     * The contract name to find it in the keychain plugin
+     * 
      * @type {string}
      * @memberof InvokeContractV1Request
      */
@@ -320,7 +575,7 @@ export interface InvokeContractV1Request {
      * @type {Web3SigningCredential}
      * @memberof InvokeContractV1Request
      */
-    web3SigningCredential: Web3SigningCredential;
+    signingCredential: Web3SigningCredential;
     /**
      * 
      * @type {EthContractInvocationType}
@@ -339,6 +594,18 @@ export interface InvokeContractV1Request {
      * @memberof InvokeContractV1Request
      */
     params: Array<any>;
+    /**
+     * The application binary interface of the solidity contract, optional parameter
+     * @type {Array<any>}
+     * @memberof InvokeContractV1Request
+     */
+    contractAbi?: Array<any>;
+    /**
+     * Address of the solidity contract, optional parameter
+     * @type {string}
+     * @memberof InvokeContractV1Request
+     */
+    contractAddress?: string;
     /**
      * 
      * @type {string | number}
@@ -374,7 +641,13 @@ export interface InvokeContractV1Request {
      * @type {string}
      * @memberof InvokeContractV1Request
      */
-    keychainId: string;
+    keychainId?: string;
+    /**
+     * 
+     * @type {QuorumPrivateTransactionConfig}
+     * @memberof InvokeContractV1Request
+     */
+    privateTransactionConfig?: QuorumPrivateTransactionConfig;
 }
 /**
  * 
@@ -400,6 +673,25 @@ export interface InvokeContractV1Response {
      * @memberof InvokeContractV1Response
      */
     success: boolean;
+}
+/**
+ * 
+ * @export
+ * @interface QuorumPrivateTransactionConfig
+ */
+export interface QuorumPrivateTransactionConfig {
+    /**
+     * 
+     * @type {string}
+     * @memberof QuorumPrivateTransactionConfig
+     */
+    privateFrom: string;
+    /**
+     * 
+     * @type {Array<any>}
+     * @memberof QuorumPrivateTransactionConfig
+     */
+    privateFor: Array<any>;
 }
 /**
  * 
@@ -459,6 +751,17 @@ export interface QuorumTransactionConfig {
     data?: string;
 }
 /**
+ * Enumerates the possible types of receipts that can be waited for by someone or something that has requested the execution of a transaction on a ledger.
+ * @export
+ * @enum {string}
+ */
+
+export enum ReceiptType {
+    NodeTxPoolAck = 'NODE_TX_POOL_ACK',
+    LedgerBlockAck = 'LEDGER_BLOCK_ACK'
+}
+
+/**
  * 
  * @export
  * @interface RunTransactionRequest
@@ -477,11 +780,17 @@ export interface RunTransactionRequest {
      */
     transactionConfig: QuorumTransactionConfig;
     /**
-     * The amount of milliseconds to wait for a transaction receipt with thehash of the transaction(which indicates successful execution) beforegiving up and crashing.
-     * @type {number}
+     * 
+     * @type {ConsistencyStrategy}
      * @memberof RunTransactionRequest
      */
-    timeoutMs?: number;
+    consistencyStrategy: ConsistencyStrategy;
+    /**
+     * 
+     * @type {QuorumPrivateTransactionConfig}
+     * @memberof RunTransactionRequest
+     */
+    privateTransactionConfig?: QuorumPrivateTransactionConfig;
 }
 /**
  * 
@@ -495,6 +804,44 @@ export interface RunTransactionResponse {
      * @memberof RunTransactionResponse
      */
     transactionReceipt: Web3TransactionReceipt;
+}
+/**
+ * 
+ * @export
+ * @interface SignTransactionRequest
+ */
+export interface SignTransactionRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof SignTransactionRequest
+     */
+    keychainId: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SignTransactionRequest
+     */
+    keychainRef: string;
+    /**
+     * The transaction hash of ledger will be used to fetch the contain.
+     * @type {string}
+     * @memberof SignTransactionRequest
+     */
+    transactionHash: string;
+}
+/**
+ * 
+ * @export
+ * @interface SignTransactionResponse
+ */
+export interface SignTransactionResponse {
+    /**
+     * The signatures of ledger from the corresponding transaction hash.
+     * @type {string}
+     * @memberof SignTransactionResponse
+     */
+    signature: string;
 }
 /**
  * 
@@ -564,10 +911,128 @@ export interface SolidityContractJsonArtifact {
     gasEstimates?: object;
 }
 /**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export enum WatchBlocksV1 {
+    Subscribe = 'org.hyperledger.cactus.api.async.quorum.WatchBlocksV1.Subscribe',
+    Next = 'org.hyperledger.cactus.api.async.quorum.WatchBlocksV1.Next',
+    Unsubscribe = 'org.hyperledger.cactus.api.async.quorum.WatchBlocksV1.Unsubscribe',
+    Error = 'org.hyperledger.cactus.api.async.quorum.WatchBlocksV1.Error',
+    Complete = 'org.hyperledger.cactus.api.async.quorum.WatchBlocksV1.Complete'
+}
+
+/**
+ * 
+ * @export
+ * @interface WatchBlocksV1Progress
+ */
+export interface WatchBlocksV1Progress {
+    /**
+     * 
+     * @type {Web3BlockHeader}
+     * @memberof WatchBlocksV1Progress
+     */
+    blockHeader: Web3BlockHeader;
+}
+/**
+ * 
+ * @export
+ * @interface Web3BlockHeader
+ */
+export interface Web3BlockHeader {
+    /**
+     * 
+     * @type {number}
+     * @memberof Web3BlockHeader
+     */
+    number: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof Web3BlockHeader
+     */
+    hash: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Web3BlockHeader
+     */
+    parentHash: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Web3BlockHeader
+     */
+    nonce: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Web3BlockHeader
+     */
+    sha3Uncles: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Web3BlockHeader
+     */
+    logsBloom: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Web3BlockHeader
+     */
+    transactionRoot: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Web3BlockHeader
+     */
+    stateRoot: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Web3BlockHeader
+     */
+    receiptRoot: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Web3BlockHeader
+     */
+    miner: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Web3BlockHeader
+     */
+    extraData: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof Web3BlockHeader
+     */
+    gasLimit: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Web3BlockHeader
+     */
+    gasUsed: number;
+    /**
+     * 
+     * @type {string | number}
+     * @memberof Web3BlockHeader
+     */
+    timestamp: string | number;
+}
+/**
  * @type Web3SigningCredential
  * @export
  */
-export type Web3SigningCredential = Web3SigningCredentialCactusKeychainRef | Web3SigningCredentialGethKeychainPassword | Web3SigningCredentialNone | Web3SigningCredentialPrivateKeyHex;
+export type Web3SigningCredential = Web3SigningCredentialCactusKeychainRef | Web3SigningCredentialNone | Web3SigningCredentialPrivateKeyHex;
 
 /**
  * 
@@ -598,32 +1063,7 @@ export interface Web3SigningCredentialCactusKeychainRef {
      * @type {string}
      * @memberof Web3SigningCredentialCactusKeychainRef
      */
-    keychainId?: string;
-}
-/**
- * 
- * @export
- * @interface Web3SigningCredentialGethKeychainPassword
- */
-export interface Web3SigningCredentialGethKeychainPassword {
-    /**
-     * 
-     * @type {Web3SigningCredentialType}
-     * @memberof Web3SigningCredentialGethKeychainPassword
-     */
-    type: Web3SigningCredentialType;
-    /**
-     * The ethereum account (public key) that the credential  belongs to. Basically the username in the traditional terminology of authentication.
-     * @type {string}
-     * @memberof Web3SigningCredentialGethKeychainPassword
-     */
-    ethAccount: string;
-    /**
-     * A geth keychain unlock password.
-     * @type {string}
-     * @memberof Web3SigningCredentialGethKeychainPassword
-     */
-    secret: string;
+    keychainId: string;
 }
 /**
  * Using this denotes that there is no signing required because the transaction is pre-signed.
@@ -749,40 +1189,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary Deploys the bytecode of a Solidity contract.
-         * @param {DeployContractSolidityBytecodeJsonObjectV1Request} [deployContractSolidityBytecodeJsonObjectV1Request] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deployContractSolBytecodeJsonObjectV1: async (deployContractSolidityBytecodeJsonObjectV1Request?: DeployContractSolidityBytecodeJsonObjectV1Request, options: any = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/deploy-contract-solidity-bytecode-json-object`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(deployContractSolidityBytecodeJsonObjectV1Request, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary Deploys the bytecode of a Solidity contract.
          * @param {DeployContractSolidityBytecodeV1Request} [deployContractSolidityBytecodeV1Request] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -808,6 +1214,108 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(deployContractSolidityBytecodeV1Request, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Return balance of an address of a given block
+         * @param {GetBalanceV1Request} [getBalanceV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getBalanceV1: async (getBalanceV1Request?: GetBalanceV1Request, options: any = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/get-balance`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(getBalanceV1Request, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Returns a block matching the block
+         * @param {GetBlockV1Request} [getBlockV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getBlockV1: async (getBlockV1Request?: GetBlockV1Request, options: any = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/get-block`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(getBlockV1Request, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Gets past logs, matching the given options.
+         * @param {GetPastLogsV1Request} [getPastLogsV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPastLogsV1: async (getPastLogsV1Request?: GetPastLogsV1Request, options: any = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/get-past-logs`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(getPastLogsV1Request, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -846,7 +1354,75 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Invokes a contract on a besu ledger
+         * @summary Retrieves an arbitrary record (any piece of information) from the ledger. Ledger records can be call outputs, transaction input, etc.
+         * @param {GetQuorumRecordV1Request} [getQuorumRecordV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getQuorumRecordV1: async (getQuorumRecordV1Request?: GetQuorumRecordV1Request, options: any = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/get-quorum-record`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(getQuorumRecordV1Request, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Executes a transaction on a quorum ledger
+         * @param {GetTransactionV1Request} [getTransactionV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTransactionV1: async (getTransactionV1Request?: GetTransactionV1Request, options: any = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/get-transaction`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(getTransactionV1Request, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Invokes a contract on a go quorum ledger
          * @param {InvokeContractV1Request} [invokeContractV1Request] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -880,41 +1456,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Invokes a contract on a besu ledger
-         * @param {InvokeContractJsonObjectV1Request} [invokeContractJsonObjectV1Request] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        invokeContractV1NoKeychain: async (invokeContractJsonObjectV1Request?: InvokeContractJsonObjectV1Request, options: any = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/invoke-contract-json-object`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(invokeContractJsonObjectV1Request, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary Executes a transaction on a quorum ledger
+         * @summary Executes a transaction on a go quorum ledger
          * @param {RunTransactionRequest} [runTransactionRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -946,6 +1488,42 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * Obtain signatures of ledger from the corresponding transaction hash.
+         * @summary Obtain signatures of ledger from the corresponding transaction hash.
+         * @param {SignTransactionRequest} signTransactionRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        signTransactionV1: async (signTransactionRequest: SignTransactionRequest, options: any = {}): Promise<RequestArgs> => {
+            // verify required parameter 'signTransactionRequest' is not null or undefined
+            assertParamExists('signTransactionV1', 'signTransactionRequest', signTransactionRequest)
+            const localVarPath = `/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/sign-transaction`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(signTransactionRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -959,23 +1537,45 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Deploys the bytecode of a Solidity contract.
-         * @param {DeployContractSolidityBytecodeJsonObjectV1Request} [deployContractSolidityBytecodeJsonObjectV1Request] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async deployContractSolBytecodeJsonObjectV1(deployContractSolidityBytecodeJsonObjectV1Request?: DeployContractSolidityBytecodeJsonObjectV1Request, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DeployContractSolidityBytecodeV1Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deployContractSolBytecodeJsonObjectV1(deployContractSolidityBytecodeJsonObjectV1Request, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @summary Deploys the bytecode of a Solidity contract.
          * @param {DeployContractSolidityBytecodeV1Request} [deployContractSolidityBytecodeV1Request] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         async deployContractSolBytecodeV1(deployContractSolidityBytecodeV1Request?: DeployContractSolidityBytecodeV1Request, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DeployContractSolidityBytecodeV1Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.deployContractSolBytecodeV1(deployContractSolidityBytecodeV1Request, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Return balance of an address of a given block
+         * @param {GetBalanceV1Request} [getBalanceV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getBalanceV1(getBalanceV1Request?: GetBalanceV1Request, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetBalanceV1Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getBalanceV1(getBalanceV1Request, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Returns a block matching the block
+         * @param {GetBlockV1Request} [getBlockV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getBlockV1(getBlockV1Request?: GetBlockV1Request, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetBlockV1Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getBlockV1(getBlockV1Request, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Gets past logs, matching the given options.
+         * @param {GetPastLogsV1Request} [getPastLogsV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getPastLogsV1(getPastLogsV1Request?: GetPastLogsV1Request, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetPastLogsV1Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPastLogsV1(getPastLogsV1Request, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -990,7 +1590,29 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Invokes a contract on a besu ledger
+         * @summary Retrieves an arbitrary record (any piece of information) from the ledger. Ledger records can be call outputs, transaction input, etc.
+         * @param {GetQuorumRecordV1Request} [getQuorumRecordV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getQuorumRecordV1(getQuorumRecordV1Request?: GetQuorumRecordV1Request, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetQuorumRecordV1Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getQuorumRecordV1(getQuorumRecordV1Request, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Executes a transaction on a quorum ledger
+         * @param {GetTransactionV1Request} [getTransactionV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getTransactionV1(getTransactionV1Request?: GetTransactionV1Request, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetTransactionV1Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTransactionV1(getTransactionV1Request, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Invokes a contract on a go quorum ledger
          * @param {InvokeContractV1Request} [invokeContractV1Request] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1001,24 +1623,24 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Invokes a contract on a besu ledger
-         * @param {InvokeContractJsonObjectV1Request} [invokeContractJsonObjectV1Request] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async invokeContractV1NoKeychain(invokeContractJsonObjectV1Request?: InvokeContractJsonObjectV1Request, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InvokeContractV1Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.invokeContractV1NoKeychain(invokeContractJsonObjectV1Request, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @summary Executes a transaction on a quorum ledger
+         * @summary Executes a transaction on a go quorum ledger
          * @param {RunTransactionRequest} [runTransactionRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         async runTransactionV1(runTransactionRequest?: RunTransactionRequest, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RunTransactionResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.runTransactionV1(runTransactionRequest, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Obtain signatures of ledger from the corresponding transaction hash.
+         * @summary Obtain signatures of ledger from the corresponding transaction hash.
+         * @param {SignTransactionRequest} signTransactionRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async signTransactionV1(signTransactionRequest: SignTransactionRequest, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SignTransactionResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.signTransactionV1(signTransactionRequest, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -1034,22 +1656,42 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary Deploys the bytecode of a Solidity contract.
-         * @param {DeployContractSolidityBytecodeJsonObjectV1Request} [deployContractSolidityBytecodeJsonObjectV1Request] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deployContractSolBytecodeJsonObjectV1(deployContractSolidityBytecodeJsonObjectV1Request?: DeployContractSolidityBytecodeJsonObjectV1Request, options?: any): AxiosPromise<DeployContractSolidityBytecodeV1Response> {
-            return localVarFp.deployContractSolBytecodeJsonObjectV1(deployContractSolidityBytecodeJsonObjectV1Request, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary Deploys the bytecode of a Solidity contract.
          * @param {DeployContractSolidityBytecodeV1Request} [deployContractSolidityBytecodeV1Request] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         deployContractSolBytecodeV1(deployContractSolidityBytecodeV1Request?: DeployContractSolidityBytecodeV1Request, options?: any): AxiosPromise<DeployContractSolidityBytecodeV1Response> {
             return localVarFp.deployContractSolBytecodeV1(deployContractSolidityBytecodeV1Request, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Return balance of an address of a given block
+         * @param {GetBalanceV1Request} [getBalanceV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getBalanceV1(getBalanceV1Request?: GetBalanceV1Request, options?: any): AxiosPromise<GetBalanceV1Response> {
+            return localVarFp.getBalanceV1(getBalanceV1Request, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Returns a block matching the block
+         * @param {GetBlockV1Request} [getBlockV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getBlockV1(getBlockV1Request?: GetBlockV1Request, options?: any): AxiosPromise<GetBlockV1Response> {
+            return localVarFp.getBlockV1(getBlockV1Request, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Gets past logs, matching the given options.
+         * @param {GetPastLogsV1Request} [getPastLogsV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPastLogsV1(getPastLogsV1Request?: GetPastLogsV1Request, options?: any): AxiosPromise<GetPastLogsV1Response> {
+            return localVarFp.getPastLogsV1(getPastLogsV1Request, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1062,7 +1704,27 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Invokes a contract on a besu ledger
+         * @summary Retrieves an arbitrary record (any piece of information) from the ledger. Ledger records can be call outputs, transaction input, etc.
+         * @param {GetQuorumRecordV1Request} [getQuorumRecordV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getQuorumRecordV1(getQuorumRecordV1Request?: GetQuorumRecordV1Request, options?: any): AxiosPromise<GetQuorumRecordV1Response> {
+            return localVarFp.getQuorumRecordV1(getQuorumRecordV1Request, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Executes a transaction on a quorum ledger
+         * @param {GetTransactionV1Request} [getTransactionV1Request] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTransactionV1(getTransactionV1Request?: GetTransactionV1Request, options?: any): AxiosPromise<GetTransactionV1Response> {
+            return localVarFp.getTransactionV1(getTransactionV1Request, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Invokes a contract on a go quorum ledger
          * @param {InvokeContractV1Request} [invokeContractV1Request] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1072,23 +1734,23 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Invokes a contract on a besu ledger
-         * @param {InvokeContractJsonObjectV1Request} [invokeContractJsonObjectV1Request] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        invokeContractV1NoKeychain(invokeContractJsonObjectV1Request?: InvokeContractJsonObjectV1Request, options?: any): AxiosPromise<InvokeContractV1Response> {
-            return localVarFp.invokeContractV1NoKeychain(invokeContractJsonObjectV1Request, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary Executes a transaction on a quorum ledger
+         * @summary Executes a transaction on a go quorum ledger
          * @param {RunTransactionRequest} [runTransactionRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         runTransactionV1(runTransactionRequest?: RunTransactionRequest, options?: any): AxiosPromise<RunTransactionResponse> {
             return localVarFp.runTransactionV1(runTransactionRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Obtain signatures of ledger from the corresponding transaction hash.
+         * @summary Obtain signatures of ledger from the corresponding transaction hash.
+         * @param {SignTransactionRequest} signTransactionRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        signTransactionV1(signTransactionRequest: SignTransactionRequest, options?: any): AxiosPromise<SignTransactionResponse> {
+            return localVarFp.signTransactionV1(signTransactionRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1103,18 +1765,6 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary Deploys the bytecode of a Solidity contract.
-     * @param {DeployContractSolidityBytecodeJsonObjectV1Request} [deployContractSolidityBytecodeJsonObjectV1Request] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DefaultApi
-     */
-    public deployContractSolBytecodeJsonObjectV1(deployContractSolidityBytecodeJsonObjectV1Request?: DeployContractSolidityBytecodeJsonObjectV1Request, options?: any) {
-        return DefaultApiFp(this.configuration).deployContractSolBytecodeJsonObjectV1(deployContractSolidityBytecodeJsonObjectV1Request, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary Deploys the bytecode of a Solidity contract.
      * @param {DeployContractSolidityBytecodeV1Request} [deployContractSolidityBytecodeV1Request] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1122,6 +1772,42 @@ export class DefaultApi extends BaseAPI {
      */
     public deployContractSolBytecodeV1(deployContractSolidityBytecodeV1Request?: DeployContractSolidityBytecodeV1Request, options?: any) {
         return DefaultApiFp(this.configuration).deployContractSolBytecodeV1(deployContractSolidityBytecodeV1Request, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Return balance of an address of a given block
+     * @param {GetBalanceV1Request} [getBalanceV1Request] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getBalanceV1(getBalanceV1Request?: GetBalanceV1Request, options?: any) {
+        return DefaultApiFp(this.configuration).getBalanceV1(getBalanceV1Request, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Returns a block matching the block
+     * @param {GetBlockV1Request} [getBlockV1Request] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getBlockV1(getBlockV1Request?: GetBlockV1Request, options?: any) {
+        return DefaultApiFp(this.configuration).getBlockV1(getBlockV1Request, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Gets past logs, matching the given options.
+     * @param {GetPastLogsV1Request} [getPastLogsV1Request] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getPastLogsV1(getPastLogsV1Request?: GetPastLogsV1Request, options?: any) {
+        return DefaultApiFp(this.configuration).getPastLogsV1(getPastLogsV1Request, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1137,7 +1823,31 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary Invokes a contract on a besu ledger
+     * @summary Retrieves an arbitrary record (any piece of information) from the ledger. Ledger records can be call outputs, transaction input, etc.
+     * @param {GetQuorumRecordV1Request} [getQuorumRecordV1Request] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getQuorumRecordV1(getQuorumRecordV1Request?: GetQuorumRecordV1Request, options?: any) {
+        return DefaultApiFp(this.configuration).getQuorumRecordV1(getQuorumRecordV1Request, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Executes a transaction on a quorum ledger
+     * @param {GetTransactionV1Request} [getTransactionV1Request] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getTransactionV1(getTransactionV1Request?: GetTransactionV1Request, options?: any) {
+        return DefaultApiFp(this.configuration).getTransactionV1(getTransactionV1Request, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Invokes a contract on a go quorum ledger
      * @param {InvokeContractV1Request} [invokeContractV1Request] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1149,19 +1859,7 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary Invokes a contract on a besu ledger
-     * @param {InvokeContractJsonObjectV1Request} [invokeContractJsonObjectV1Request] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DefaultApi
-     */
-    public invokeContractV1NoKeychain(invokeContractJsonObjectV1Request?: InvokeContractJsonObjectV1Request, options?: any) {
-        return DefaultApiFp(this.configuration).invokeContractV1NoKeychain(invokeContractJsonObjectV1Request, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary Executes a transaction on a quorum ledger
+     * @summary Executes a transaction on a go quorum ledger
      * @param {RunTransactionRequest} [runTransactionRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1169,6 +1867,18 @@ export class DefaultApi extends BaseAPI {
      */
     public runTransactionV1(runTransactionRequest?: RunTransactionRequest, options?: any) {
         return DefaultApiFp(this.configuration).runTransactionV1(runTransactionRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Obtain signatures of ledger from the corresponding transaction hash.
+     * @summary Obtain signatures of ledger from the corresponding transaction hash.
+     * @param {SignTransactionRequest} signTransactionRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public signTransactionV1(signTransactionRequest: SignTransactionRequest, options?: any) {
+        return DefaultApiFp(this.configuration).signTransactionV1(signTransactionRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

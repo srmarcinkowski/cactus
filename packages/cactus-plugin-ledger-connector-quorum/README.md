@@ -265,3 +265,89 @@ This distribution is published under the Apache License Version 2.0 found in the
 
 ## Acknowledgments 
 ```
+
+
+# Notes by Sławek
+
+Console 1
+
+```sh
+start tools/quorum-docker-all-in-one/docker-compose.yaml  #(quorum-multi-party-all-in-one is not working)
+```
+
+```sh
+npm run start:api-server
+```
+
+Console 2
+
+```sh
+curl --location --request POST -k 'https://127.0.0.1:4000/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/run-transaction' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "web3SigningCredential": {
+      "ethAccount": "627306090abaB3A6e1400e9345bC60c78a8BEf57",
+      "secret": "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3",
+      "type": "PRIVATE_KEY_HEX"
+    },
+    "transactionConfig": {
+      "from": "627306090abaB3A6e1400e9345bC60c78a8BEf57",
+      "to": "f17f52151EbEF6C7334FAD080c5704D77216b732",
+      "value": 1,
+      "gas": 21000
+    }
+}'
+```
+
+curl --location --request POST -k 'https://127.0.0.1:4000/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/run-transaction' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "web3SigningCredential": {
+      "ethAccount": "627306090abaB3A6e1400e9345bC60c78a8BEf57",
+      "secret": "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3",
+      "type": "PRIVATE_KEY_HEX"
+    },
+    "transactionConfig": {
+      "from": "627306090abaB3A6e1400e9345bC60c78a8BEf57",
+      "to": "f17f52151EbEF6C7334FAD080c5704D77216b732",
+      "value": 1,
+      "gas": 10000000
+    }
+}'
+
+
+
+//
+"consistencyStrategy": {
+      "blockConfirmations": 0,
+      "receiptType": "NODE_TX_POOL_ACK"
+    },
+
+
+```sh
+curl --location --request POST -k 'https://127.0.0.1:4000/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/get-balance' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "web3SigningCredential": {
+      "ethAccount": "627306090abaB3A6e1400e9345bC60c78a8BEf57",
+      "secret": "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3",
+      "type": "PRIVATE_KEY_HEX"
+    },
+    "address": "627306090abaB3A6e1400e9345bC60c78a8BEf57"
+}'
+```
+
+
+```sh
+curl --location --request POST -k 'https://127.0.0.1:4000/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/get-quorum-record' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "web3SigningCredential": {
+      "ethAccount": "627306090abaB3A6e1400e9345bC60c78a8BEf57",
+      "secret": "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3",
+      "type": "PRIVATE_KEY_HEX"
+    },
+    "address": "627306090abaB3A6e1400e9345bC60c78a8BEf57"
+}'
+```
+

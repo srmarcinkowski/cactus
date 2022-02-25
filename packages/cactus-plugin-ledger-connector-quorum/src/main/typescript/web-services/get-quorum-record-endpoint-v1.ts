@@ -15,25 +15,25 @@ import {
 import { registerWebServiceEndpoint } from "@hyperledger/cactus-core";
 
 import { PluginLedgerConnectorQuorum } from "../plugin-ledger-connector-quorum";
+import { GetQuorumRecordV1Request } from "../generated/openapi/typescript-axios/api";
 
 import OAS from "../../json/openapi.json";
-import { RunTransactionRequest } from "../generated/openapi/typescript-axios";
 
-export interface IRunTransactionEndpointOptions {
+export interface IGetQuorumRecordEndpointV1Options {
   logLevel?: LogLevelDesc;
   connector: PluginLedgerConnectorQuorum;
 }
 
-export class RunTransactionEndpoint implements IWebServiceEndpoint {
-  public static readonly CLASS_NAME = "RunTransactionEndpoint";
+export class GetQuorumRecordEndpointV1 implements IWebServiceEndpoint {
+  public static readonly CLASS_NAME = "GetQuorumRecordEndpointV1";
 
   private readonly log: Logger;
 
   public get className(): string {
-    return RunTransactionEndpoint.CLASS_NAME;
+    return GetQuorumRecordEndpointV1.CLASS_NAME;
   }
 
-  constructor(public readonly options: IRunTransactionEndpointOptions) {
+  constructor(public readonly options: IGetQuorumRecordEndpointV1Options) {
     const fnTag = `${this.className}#constructor()`;
     Checks.truthy(options, `${fnTag} arg options`);
     Checks.truthy(options.connector, `${fnTag} arg options.connector`);
@@ -43,22 +43,24 @@ export class RunTransactionEndpoint implements IWebServiceEndpoint {
     this.log = LoggerProvider.getOrCreate({ level, label });
   }
 
-  public get oasPath(): typeof OAS.paths["/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/run-transaction"] {
+  public getOasPath() {
     return OAS.paths[
-      "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/run-transaction"
+      "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/get-quorum-record"
     ];
   }
 
   public getPath(): string {
-    return this.oasPath.post["x-hyperledger-cactus"].http.path;
+    const apiPath = this.getOasPath();
+    return apiPath.post["x-hyperledger-cactus"].http.path;
   }
 
   public getVerbLowerCase(): string {
-    return this.oasPath.post["x-hyperledger-cactus"].http.verbLowerCase;
+    const apiPath = this.getOasPath();
+    return apiPath.post["x-hyperledger-cactus"].http.verbLowerCase;
   }
 
   public getOperationId(): string {
-    return this.oasPath.post.operationId;
+    return this.getOasPath().post.operationId;
   }
 
   getAuthorizationOptionsProvider(): IAsyncProvider<IEndpointAuthzOptions> {
@@ -85,10 +87,10 @@ export class RunTransactionEndpoint implements IWebServiceEndpoint {
   public async handleRequest(req: Request, res: Response): Promise<void> {
     const reqTag = `${this.getVerbLowerCase()} - ${this.getPath()}`;
     this.log.debug(reqTag);
-    const reqBody: RunTransactionRequest = req.body;
     try {
-      const resBody = await this.options.connector.transact(reqBody);
-      res.json({ success: true, data: resBody });
+      const reqBody: GetQuorumRecordV1Request = req.body as GetQuorumRecordV1Request;
+      const resBody = await this.options.connector.getQuorumRecord(reqBody);
+      res.json(resBody);
     } catch (ex) {
       this.log.error(`Crash while serving ${reqTag}`, ex);
       res.status(500).json({

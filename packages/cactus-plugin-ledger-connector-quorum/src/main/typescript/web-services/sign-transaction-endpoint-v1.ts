@@ -2,8 +2,6 @@ import { Express, Request, Response } from "express";
 
 import { registerWebServiceEndpoint } from "@hyperledger/cactus-core";
 
-import OAS from "../../json/openapi.json";
-
 import {
   IWebServiceEndpoint,
   IExpressRequestHandler,
@@ -18,26 +16,26 @@ import {
   IAsyncProvider,
 } from "@hyperledger/cactus-common";
 
-import { PluginLedgerConnectorQuorum } from "../plugin-ledger-connector-quorum";
+import { SignTransactionRequest } from "../generated/openapi/typescript-axios/api";
 
-export interface IGetPrometheusExporterMetricsEndpointV1Options {
+import { PluginLedgerConnectorQuorum } from "../plugin-ledger-connector-quorum";
+import OAS from "../../json/openapi.json";
+
+export interface IQuorumSignTransactionEndpointOptions {
   connector: PluginLedgerConnectorQuorum;
   logLevel?: LogLevelDesc;
 }
 
-export class GetPrometheusExporterMetricsEndpointV1
-  implements IWebServiceEndpoint {
+export class QuorumSignTransactionEndpointV1 implements IWebServiceEndpoint {
   private readonly log: Logger;
 
-  constructor(
-    public readonly options: IGetPrometheusExporterMetricsEndpointV1Options,
-  ) {
-    const fnTag = "GetPrometheusExporterMetricsEndpointV1#constructor()";
+  constructor(public readonly options: IQuorumSignTransactionEndpointOptions) {
+    const fnTag = "QuorumSignTransactionEndpointV1#constructor()";
 
     Checks.truthy(options, `${fnTag} options`);
     Checks.truthy(options.connector, `${fnTag} options.connector`);
 
-    const label = "get-prometheus-exporter-metrics-endpoint";
+    const label = "quorum-sign-transaction-endpoint";
     const level = options.logLevel || "INFO";
     this.log = LoggerProvider.getOrCreate({ label, level });
   }
@@ -56,22 +54,22 @@ export class GetPrometheusExporterMetricsEndpointV1
     return this.handleRequest.bind(this);
   }
 
-  public get oasPath(): typeof OAS.paths["/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/get-prometheus-exporter-metrics"] {
+  public get oasPath(): typeof OAS.paths["/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/sign-transaction"] {
     return OAS.paths[
-      "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/get-prometheus-exporter-metrics"
+      "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/sign-transaction"
     ];
   }
 
-  public getPath(): string {
-    return this.oasPath.get["x-hyperledger-cactus"].http.path;
+  getPath(): string {
+    return this.oasPath.post["x-hyperledger-cactus"].http.path;
   }
 
-  public getVerbLowerCase(): string {
-    return this.oasPath.get["x-hyperledger-cactus"].http.verbLowerCase;
+  getVerbLowerCase(): string {
+    return this.oasPath.post["x-hyperledger-cactus"].http.verbLowerCase;
   }
 
   public getOperationId(): string {
-    return this.oasPath.get.operationId;
+    return this.oasPath.post.operationId;
   }
 
   public async registerExpress(
@@ -82,14 +80,23 @@ export class GetPrometheusExporterMetricsEndpointV1
   }
 
   async handleRequest(req: Request, res: Response): Promise<void> {
-    const fnTag = "GetPrometheusExporterMetrics#handleRequest()";
-    const verbUpper = this.getVerbLowerCase().toUpperCase();
-    this.log.debug(`${verbUpper} ${this.getPath()}`);
+    const fnTag = "QuorumSignTransactionEndpointV1#handleRequest()";
+    this.log.debug(`POST ${this.getPath()}`);
 
     try {
-      const resBody = await this.options.connector.getPrometheusExporterMetrics();
-      res.status(200);
-      res.send(resBody);
+      const request: SignTransactionRequest = req.body as SignTransactionRequest;
+
+      const trxResponse = await this.options.connector.signTransaction(request);
+
+      if (trxResponse.isPresent()) {
+        res.status(200);
+        res.json(trxResponse.get());
+      } else {
+        this.log.error(`${fnTag} failed to find the transaction`);
+        res.status(404);
+        res.statusMessage = "Transaction not found";
+        res.json({ error: "Transaction not found" });
+      }
     } catch (ex) {
       this.log.error(`${fnTag} failed to serve request`, ex);
       res.status(500);

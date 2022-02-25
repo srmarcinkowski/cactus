@@ -17,23 +17,22 @@ import { registerWebServiceEndpoint } from "@hyperledger/cactus-core";
 import { PluginLedgerConnectorQuorum } from "../plugin-ledger-connector-quorum";
 
 import OAS from "../../json/openapi.json";
-import { RunTransactionRequest } from "../generated/openapi/typescript-axios";
 
-export interface IRunTransactionEndpointOptions {
+export interface IGetBlockEndpointOptions {
   logLevel?: LogLevelDesc;
   connector: PluginLedgerConnectorQuorum;
 }
 
-export class RunTransactionEndpoint implements IWebServiceEndpoint {
-  public static readonly CLASS_NAME = "RunTransactionEndpoint";
+export class GetBlockEndpoint implements IWebServiceEndpoint {
+  public static readonly CLASS_NAME = "GetBlockEndpoint";
 
   private readonly log: Logger;
 
   public get className(): string {
-    return RunTransactionEndpoint.CLASS_NAME;
+    return GetBlockEndpoint.CLASS_NAME;
   }
 
-  constructor(public readonly options: IRunTransactionEndpointOptions) {
+  constructor(public readonly options: IGetBlockEndpointOptions) {
     const fnTag = `${this.className}#constructor()`;
     Checks.truthy(options, `${fnTag} arg options`);
     Checks.truthy(options.connector, `${fnTag} arg options.connector`);
@@ -43,9 +42,9 @@ export class RunTransactionEndpoint implements IWebServiceEndpoint {
     this.log = LoggerProvider.getOrCreate({ level, label });
   }
 
-  public get oasPath(): typeof OAS.paths["/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/run-transaction"] {
+  public get oasPath(): typeof OAS.paths["/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/get-block"] {
     return OAS.paths[
-      "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/run-transaction"
+      "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-quorum/get-block"
     ];
   }
 
@@ -85,10 +84,10 @@ export class RunTransactionEndpoint implements IWebServiceEndpoint {
   public async handleRequest(req: Request, res: Response): Promise<void> {
     const reqTag = `${this.getVerbLowerCase()} - ${this.getPath()}`;
     this.log.debug(reqTag);
-    const reqBody: RunTransactionRequest = req.body;
+    const reqBody = req.body;
     try {
-      const resBody = await this.options.connector.transact(reqBody);
-      res.json({ success: true, data: resBody });
+      const resBody = await this.options.connector.getBlock(reqBody);
+      res.json(resBody);
     } catch (ex) {
       this.log.error(`Crash while serving ${reqTag}`, ex);
       res.status(500).json({
