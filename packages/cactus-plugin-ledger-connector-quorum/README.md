@@ -275,6 +275,12 @@ Console 1
 start tools/quorum-docker-all-in-one/docker-compose.yaml  #(quorum-multi-party-all-in-one is not working)
 ```
 
+DOCKER_BUILDKIT=1 docker build ./tools/docker/quorum-multi-party-all-in-one -t qmpaio
+docker run -p 0.0.0.0:8545:8545/tcp  -p 0.0.0.0:8546:8546/tcp  -p 0.0.0.0:8888:8888/tcp  -p 0.0.0.0:9001:9001/tcp  -p 0.0.0.0:9545:9545/tcp  qmpaio
+
+
+
+
 ```sh
 npm run start:api-server
 ```

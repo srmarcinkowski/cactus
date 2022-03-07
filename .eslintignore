@@ -8,3 +8,15 @@ packages/cactus-cmd-socketio-server/**
 packages/cactus-plugin-ledger-connector-sawtooth-socketio/**
 packages/cactus-plugin-ledger-connector-go-ethereum-socketio/**
 packages/cactus-plugin-ledger-connector-*-socketio/**
+
+
+# by SM BELOW TO BE DELETED
+packages/cactus-plugin-ledger-connector-quorum/**
+packages/cactus-plugin-ledger-connector-xdai/**
+packages/cactus-plugin-ledger-connector-besu/**
+packages/cactus-test-api-client/**
+packages/cactus-test-plugin-ledger-connector-quorum/**
+examples/cactus-example-supply-chain-business-logic-plugin/src/main/typescript/business-logic-plugin/web-services/**
+examples/cactus-example-supply-chain-backend/src/main/typescript/infrastructure/**
+examples/cactus-example-supply-chain-backend/src/main/typescript/**
+

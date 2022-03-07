@@ -368,7 +368,6 @@ export class PluginLedgerConnectorQuorum
         contractJSON.abi,
         contractJSON.networks[networkId].address,
       );
-      //@ts-ignore
       this.contracts[contractName] = contract;
     } else if (
       req.keychainId == undefined &&
@@ -390,7 +389,6 @@ export class PluginLedgerConnectorQuorum
       }
 
       const { contractAddress } = req;
-      //@ts-ignore
       contractInstance = new this.web3.eth.Contract(abi, contractAddress);
     }
 
@@ -818,7 +816,6 @@ export class PluginLedgerConnectorQuorum
             contractJSON.abi,
             contractAddress,
           );
-          //@ts-ignore
           this.contracts[contractName] = contract;
 
           const network = { [networkId]: networkInfo };

@@ -1,8 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Hyperledger Cactus Plugin - Connector Go Quorum
- * Can perform basic tasks on a Go Quorum ledger
+ * Hyperledger Cactus Plugin - Connector Quorum
+ * Can perform basic tasks on a Quorum ledger
  *
  * The version of the OpenAPI document: 0.0.1
  * 

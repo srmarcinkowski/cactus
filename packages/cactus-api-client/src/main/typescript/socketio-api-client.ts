@@ -88,6 +88,7 @@ export class SocketLedgerEvent {
  *
  * @todo Analyze and handle broken connection / socket disconnected scenarios
  */
+
 export class SocketIOApiClient implements ISocketApiClient<SocketLedgerEvent> {
   private readonly log: Logger;
   private readonly socket: Socket;
